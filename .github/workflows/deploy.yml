@@ -23,6 +23,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
           script: |
+            set -e  # Stop on any error
             echo "🚀 Deployment Started"
 
             cd /home/ubuntu/app
@@ -34,13 +35,12 @@ jobs:
             # BACKEND SETUP
             # =========================
             cd backend
-
-            python3 -m venv venv
+            echo "📦 Setting up Backend..."
+            python3 -m venv venv || true
             source venv/bin/activate
-
             pip install -r requirements.txt
 
-            # Create .env file
+            # Create/Update .env file
             cat > .env <<EOL
             DB_HOST=${{ secrets.DB_HOST }}
             DB_PORT=${{ secrets.DB_PORT }}
@@ -50,29 +50,42 @@ jobs:
             SECRET_KEY=${{ secrets.SECRET_KEY }}
             ALGORITHM=${{ secrets.ALGORITHM }}
             ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+            ALLOWED_ORIGINS=["http://localhost:5173", "http://16.112.203.49"]
             EOL
 
-            # Restart backend using PM2
+            # Restart backend
             pm2 restart backend || pm2 start /home/ubuntu/app/backend/venv/bin/uvicorn \
-            "app.main:app --host 0.0.0.0 --port 5000" \ --name backend
-            
+            "app.main:app --host 0.0.0.0 --port 5000" --name backend
+
             # =========================
             # FRONTEND SETUP
             # =========================
             cd ../work-updates
-
-            # Clean install and build with Vite
+            echo "📦 Building Frontend..."
+            
             npm install
             rm -rf dist
             npm run build
 
-            # Synchronize Nginx Configuration (Nginx serves directly from dist)
+            # Check if dist was created
+            if [ ! -d "dist" ]; then
+                echo "❌ BUILD FAILED: dist folder not created"
+                exit 1
+            fi
+
+            # Add a version tag we can check in the browser
+            echo "Build Date: $(date)" > dist/version.txt
+
+            # =========================
+            # NGINX SYNC
+            # =========================
+            echo "🔧 Syncing Nginx..."
             cd ..
             if [ -f "deployment/nginx.conf" ]; then
                 sudo cp deployment/nginx.conf /etc/nginx/sites-available/default
                 sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-                sudo systemctl restart nginx
+                sudo nginx -t && sudo systemctl restart nginx
             fi
 
             pm2 save
-            echo "✅ Deployment Completed"
+            echo "✅ Deployment Completed Successfully!"
