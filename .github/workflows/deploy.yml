@@ -26,7 +26,7 @@ jobs:
             set -e  # Stop on any error
             echo "🚀 Deployment Started"
 
-            cd /home/ubuntu/app
+            cd /home/sooraj/Work-Sheet-1 ✅
 
             # Pull latest code
             git pull origin main
