@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-const RAW_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api';
-const API_BASE_URL = RAW_BASE_URL.endsWith('/') ? RAW_BASE_URL : `${RAW_BASE_URL}/`;
+// In production, we always use the relative /api which Nginx proxies to the backend
+const API_BASE_URL = '/api/';
 
 console.log(`[API] Initialized with Base URL: ${API_BASE_URL}`);
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 15000,
+    timeout: 30000, // Increased timeout for RDS latency
 });
 
 // Add request interceptor

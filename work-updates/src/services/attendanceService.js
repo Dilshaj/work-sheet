@@ -1,12 +1,11 @@
-import axios from 'axios';
-const API = import.meta.env.VITE_API_BASE_URL || '/api';
+import api from './api';
 const API_URL = 'attendance';
 
 export const getAttendanceLogs = async (projectId = null) => {
     try {
         const params = {};
         if (projectId) params.project_id = projectId;
-        const response = await axios.get(`${API}/${API_URL}/`, { params });
+        const response = await api.get(`${API_URL}/`, { params });
         return response.data;
     } catch (error) {
         console.error('Failed to fetch attendance logs:', error);
@@ -16,7 +15,7 @@ export const getAttendanceLogs = async (projectId = null) => {
 
 export const getEmployeeAttendance = async (employeeId) => {
     try {
-        const response = await axios.get(`${API}/${API_URL}/${employeeId}`);
+        const response = await api.get(`${API_URL}/${employeeId}`);
         return response.data;
     } catch (error) {
         console.error(`Failed to fetch attendance for ${employeeId}:`, error);
@@ -26,7 +25,7 @@ export const getEmployeeAttendance = async (employeeId) => {
 
 export const checkIn = async ({ userId, employeeId, userName, projectId = null, latitude = null, longitude = null, location_name = null }) => {
     try {
-        const response = await axios.post(`${API}/${API_URL}/check-in`, {
+        const response = await api.post(`${API_URL}/check-in`, {
             employee_id: employeeId,
             latitude,
             longitude,
@@ -40,7 +39,7 @@ export const checkIn = async ({ userId, employeeId, userName, projectId = null, 
 
 export const checkOut = async (userId, employeeId) => {
     try {
-        const response = await axios.post(`${API}/${API_URL}/employee/check-out`, {
+        const response = await api.post(`${API_URL}/employee/check-out`, {
             userId,
             employee_id: employeeId
         });
@@ -52,7 +51,7 @@ export const checkOut = async (userId, employeeId) => {
 
 export const exportAttendanceToExcel = async () => {
     try {
-        const response = await axios.get(`${API}/${API_URL}/admin/export`, {
+        const response = await api.get(`${API_URL}/admin/export`, {
             responseType: 'blob',
         });
 

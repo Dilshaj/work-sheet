@@ -1,10 +1,9 @@
-import axios from 'axios';
-const API = import.meta.env.VITE_API_BASE_URL || '/api';
+import api from './api';
 const API_URL = 'offer-letter';
 
 export const saveOfferLetter = async (offerData) => {
     try {
-        const response = await axios.post(`${API}/${API_URL}/`, offerData);
+        const response = await api.post(`${API_URL}/`, offerData);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.detail || 'Failed to save offer letter');
@@ -15,7 +14,7 @@ export const getOfferLetters = async (projectId = null) => {
     try {
         const params = {};
         if (projectId) params.project_id = projectId;
-        const response = await axios.get(`${API}/${API_URL}/`, { params });
+        const response = await api.get(`${API_URL}/`, { params });
         return response.data;
     } catch (error) {
         console.error('Failed to fetch offer letters:', error);
@@ -25,8 +24,8 @@ export const getOfferLetters = async (projectId = null) => {
 
 export const downloadOfferLetter = async (employeeId) => {
     try {
-        const response = await axios({
-            url: `${API}/${API_URL}/${employeeId}`,
+        const response = await api({
+            url: `${API_URL}/${employeeId}`,
             method: 'GET',
             responseType: 'blob', // Important
         });

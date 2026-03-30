@@ -1,5 +1,4 @@
-import axios from 'axios';
-const API = import.meta.env.VITE_API_BASE_URL || '/api';
+import api from './api';
 const API_URL = 'auth';
 
 export const login = async (email, employeeId, password) => {
@@ -9,7 +8,7 @@ export const login = async (email, employeeId, password) => {
         if (employeeId) payload.employee_id = employeeId;
         payload.password = password;
 
-        const response = await axios.post(`${API}/${API_URL}/login`, payload);
+        const response = await api.post(`${API_URL}/login`, payload);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.detail || 'Invalid credentials');
@@ -18,10 +17,9 @@ export const login = async (email, employeeId, password) => {
 
 export const changePassword = async (token, newPassword) => {
     try {
-        const response = await axios.post(
-            `${API}/${API_URL}/change-password`,
-            { newPassword },
-            { headers: { Authorization: `Bearer ${token}` } }
+        const response = await api.post(
+            `${API_URL}/change-password`,
+            { newPassword }
         );
         return response.data;
     } catch (error) {

@@ -1,24 +1,23 @@
-import axios from 'axios';
-const API = import.meta.env.VITE_API_BASE_URL || '/api';
+import api from './api';
 
 // ─── Tasks ───────────────────────────────────────────────
 export const getTasks = async () => {
     try {
-        const res = await axios.get(`${API}/tasks`);
+        const res = await api.get(`tasks`);
         return res.data;
     } catch { return []; }
 };
 
 export const getTasksByEmployee = async (userId) => {
     try {
-        const res = await axios.get(`${API}/tasks/employee/${userId}`);
+        const res = await api.get(`tasks/employee/${userId}`);
         return res.data;
     } catch { return []; }
 };
 
 export const addTask = async (task) => {
     try {
-        const res = await axios.post(`${API}/tasks`, {
+        const res = await api.post(`tasks`, {
             title: task.title,
             description: task.description,
             deadline: task.deadline,
@@ -35,7 +34,7 @@ export const addTask = async (task) => {
 
 export const updateTaskStatus = async (id, status) => {
     try {
-        const res = await axios.patch(`${API}/tasks/${id}/status`, { status });
+        const res = await api.patch(`tasks/${id}/status`, { status });
         return res.data;
     } catch (error) {
         throw new Error(error.response?.data?.detail || 'Failed to update task status');
@@ -47,14 +46,14 @@ export const getEmployees = async (projectId = null) => {
     try {
         const params = {};
         if (projectId) params.project_id = projectId;
-        const res = await axios.get(`${API}/employees`, { params });
+        const res = await api.get(`employees`, { params });
         return res.data;
     } catch { return []; }
 };
 
 export const updateEmployeeProgress = async (id, newProgressStats) => {
     try {
-        const res = await axios.put(`${API}/employees/${id}/progress`, {
+        const res = await api.put(`employees/${id}/progress`, {
             dailyProgress: newProgressStats.dailyProgress,
             weeklyProgress: newProgressStats.weeklyProgress,
         });
@@ -66,7 +65,7 @@ export const updateEmployeeProgress = async (id, newProgressStats) => {
 
 export const addEmployee = async (employee) => {
     // Sends all fields including project_id for immediate assignment
-    const res = await axios.post(`${API}/employees`, {
+    const res = await api.post(`employees`, {
         employee_id: employee.employeeId,
         name: employee.name,
         role: employee.role,
@@ -80,7 +79,7 @@ export const searchEmployee = async ({ employeeId, name }) => {
         const params = {};
         if (employeeId) params.employee_id = employeeId;
         if (name) params.name = name;
-        const res = await axios.get(`${API}/employees/search`, { params });
+        const res = await api.get(`employees/search`, { params });
         return res.data;
     } catch (error) {
         if (error.response?.status === 404) return null;
@@ -90,7 +89,7 @@ export const searchEmployee = async ({ employeeId, name }) => {
 
 export const assignEmployeeToProject = async (id, projectId) => {
     try {
-        const res = await axios.put(`${API}/employees/${id}/assign`, { projectId });
+        const res = await api.put(`employees/${id}/assign`, { projectId });
         return res.data;
     } catch (error) {
         throw new Error(error.response?.data?.detail || 'Failed to assign project');
@@ -99,7 +98,7 @@ export const assignEmployeeToProject = async (id, projectId) => {
 
 export const deleteEmployee = async (employeeId) => {
     try {
-        const res = await axios.delete(`${API}/employees/admin/delete-employee/${employeeId}`);
+        const res = await api.delete(`employees/admin/delete-employee/${employeeId}`);
         return res.data;
     } catch (error) {
         const detail = error.response?.data?.detail || 'Failed to delete employee';

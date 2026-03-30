@@ -25,7 +25,7 @@ def upload_image(file: UploadFile = File(...)):
         buffer.write(file.file.read())
 
     return {
-        "image_url": f"http://16.112.203.49:5000/uploads/{filename}"
+        "image_url": f"/uploads/{filename}"
     }
 
 # ✅ GET ALL PROJECTS
