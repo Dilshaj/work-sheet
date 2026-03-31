@@ -378,3 +378,25 @@ const UserDashboard = () => {
 };
 
 export default UserDashboard;
+
+import { useEffect, useState } from "react";
+import { getData } from "../api";   // adjust path if needed
+
+function UserDashboard() {
+  const [data, setData] = useState("");
+
+  useEffect(() => {
+    getData()
+      .then(res => setData(res.msg))
+      .catch(err => console.error(err));
+  }, []);
+
+  return (
+    <div>
+      <h2>User Dashboard</h2>
+      <p>{data || "Loading..."}</p>
+    </div>
+  );
+}
+
+export default UserDashboard;
