@@ -181,16 +181,7 @@ function App() {
 
 export default App;
 
-import { useEffect } from "react";
-import { getHome } from "./api/api";
-
-function App() {
-
-  useEffect(() => {
-    getHome().then(data => console.log(data));
-  }, []);
-
-  import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getData } from "./api/api";
 
 function App() {
