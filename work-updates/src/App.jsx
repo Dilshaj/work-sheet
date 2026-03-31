@@ -190,6 +190,32 @@ function App() {
     getHome().then(data => console.log(data));
   }, []);
 
+  import { useEffect, useState } from "react";
+import { getData } from "./api/api";
+
+function App() {
+
+  const [data, setData] = useState("");
+
+  useEffect(() => {
+    getData()
+      .then(res => {
+        console.log(res);
+        setData(res.msg || JSON.stringify(res));
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  return (
+    <div>
+      <h1>Frontend Connected 🚀</h1>
+      <p>{data}</p>
+    </div>
+  );
+}
+
+export default App;
+
   return <h1>My App</h1>;
 }
 
