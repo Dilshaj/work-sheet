@@ -4,48 +4,64 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import OperationalError
 from app.core.config import settings
 
-# Setup basic logging to monitor DB issues
+# 🔹 Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create the SQLAlchemy engine for SQL Server
-# fast_executemany=True is highly recommended when using pyodbc for batch performance
-# pool_pre_ping=True verifies the connection before executing allowing recovery from dropped connections
+# 🔥 FIX: correct SQL Server driver
+# ⚠️ spaces → + use cheyyali
+DATABASE_URL = settings.get_database_url.replace(
+    "driver=SQL Server",
+    "driver=ODBC+Driver+18+for+SQL+Server"
+)
+
+# 🔹 Create engine safely
+engine = None
+
 try:
     engine = create_engine(
-        settings.get_database_url,
-        fast_executemany=True, 
+        DATABASE_URL,
+        fast_executemany=True,
         pool_pre_ping=True,
         pool_recycle=3600
     )
-    logger.info("Successfully configured the SQL Server SQLAlchemy engine.")
+    logger.info("✅ SQL Server engine configured successfully.")
 except Exception as e:
-    logger.error(f"Error configuring database engine setup: {e}")
-    # We do not strictly fail here to allow the process to boot and fail gracefully during health checks.
+    logger.error(f"❌ Error configuring DB engine: {e}")
 
-# Create Customized Session Object
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# 🔹 Session setup (safe bind)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine if engine else None
+)
 
-# Base class for mapping Pydantic schema later down the road
+# 🔹 Base model
 Base = declarative_base()
 
-# FastAPI Dependency for injecting database sessions securely into endpoints
+# 🔹 Dependency
 def get_db():
+    if engine is None:
+        raise Exception("Database not initialized properly")
+        
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close() # Always close to release resources back to pool
+        db.close()
 
+# 🔹 Connection test
 def test_database_connection():
-    """Utility function to forcefully verify the backend can reach the SQL Server instance"""
     try:
+        if engine is None:
+            return False
+            
         with engine.connect() as connection:
-            logger.info("Successfully verified connection to the SQL Server Database instance.")
+            logger.info("✅ DB connection successful.")
             return True
     except OperationalError as e:
-        logger.error(f"SQL Server connection failed due to OperationalError: {e}")
+        logger.error(f"❌ DB OperationalError: {e}")
         return False
     except Exception as e:
-        logger.error(f"An unexpected Python exception during Database initialization: {e}")
+        logger.error(f"❌ Unexpected DB error: {e}")
         return False

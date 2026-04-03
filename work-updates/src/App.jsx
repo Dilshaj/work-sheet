@@ -28,7 +28,7 @@ const PrivateRoute = ({ children, roleRequired }) => {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/" />;
-  if (roleRequired && user.role !== roleRequired) {
+  if (roleRequired && user.role?.toLowerCase() !== roleRequired) {
     return <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} />;
   }
 
@@ -110,7 +110,7 @@ const AppRoutes = () => {
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute roleRequired="user">
+          <PrivateRoute>
             <UserDashboard />
           </PrivateRoute>
         }
