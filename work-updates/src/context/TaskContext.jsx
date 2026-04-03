@@ -14,12 +14,16 @@ export const TaskProvider = ({ children }) => {
         const fetchAll = () => {
             setLoading(true);
             Promise.all([getTasks(), getEmployees(selectedProjectId)]).then(([tasksData, empData]) => {
-                const bustedEmployees = empData.map(emp => ({
-                    ...emp,
-                    avatar: emp.avatar && !emp.avatar.includes('ui-avatars.com')
-                        ? `${emp.avatar.split('?')[0]}?t=${Date.now()}`
-                        : emp.avatar
-                }));
+                const bustedEmployees = empData.map(emp => {
+                    let avatar = emp.avatar;
+                    if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
+                        avatar = `${window.location.origin}${avatar}`;
+                    }
+                    if (avatar && !avatar.includes('ui-avatars.com')) {
+                        avatar = `${avatar.split('?')[0]}?t=${Date.now()}`;
+                    }
+                    return { ...emp, avatar };
+                });
                 setTasks(tasksData);
                 setEmployees(bustedEmployees);
                 setLoading(false);
@@ -53,12 +57,16 @@ export const TaskProvider = ({ children }) => {
 
     const fetchEmployees = async () => {
         const fresh = await getEmployees(selectedProjectId);
-        const bustedEmployees = fresh.map(emp => ({
-            ...emp,
-            avatar: emp.avatar && !emp.avatar.includes('ui-avatars.com')
-                ? `${emp.avatar.split('?')[0]}?t=${Date.now()}`
-                : emp.avatar
-        }));
+        const bustedEmployees = fresh.map(emp => {
+            let avatar = emp.avatar;
+            if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
+                avatar = `${window.location.origin}${avatar}`;
+            }
+            if (avatar && !avatar.includes('ui-avatars.com')) {
+                avatar = `${avatar.split('?')[0]}?t=${Date.now()}`;
+            }
+            return { ...emp, avatar };
+        });
         setEmployees(bustedEmployees);
     };
 

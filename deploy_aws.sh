@@ -28,7 +28,14 @@ if [ -f "deployment/nginx.conf" ]; then
     sudo systemctl restart nginx
 fi
 
-# 4. Restart Application Services
+# 4. Fix Permissions (Crucial for image uploads)
+echo "Fixing file permissions for storage..."
+sudo mkdir -p backend/static/avatars
+sudo mkdir -p backend/uploads
+sudo chown -R ubuntu:www-data backend/static backend/uploads
+sudo chmod -R 775 backend/static backend/uploads
+
+# 5. Restart Application Services
 echo "Reloading backend services..."
 sudo systemctl daemon-reload
 # Restart backend using systemd or pm2 (matches the workflow)

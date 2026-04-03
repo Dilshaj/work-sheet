@@ -98,10 +98,13 @@ const UserProfile = () => {
 
             const response = await updateProfile(formData);
 
-            // Append timestamp to avatar URL to bypass browser cache
+            // Append timestamp and domain to avatar URL to bypass browser cache
             const updatedUser = { ...response.user };
+            if (updatedUser.avatar && !updatedUser.avatar.includes('http') && updatedUser.avatar.startsWith('/')) {
+                updatedUser.avatar = `${window.location.origin}${updatedUser.avatar}`;
+            }
             if (updatedUser.avatar && !updatedUser.avatar.includes('ui-avatars.com')) {
-                updatedUser.avatar = `${updatedUser.avatar}?t=${Date.now()}`;
+                updatedUser.avatar = `${updatedUser.avatar.split('?')[0]}?t=${Date.now()}`;
             }
 
             updateUser(updatedUser);
