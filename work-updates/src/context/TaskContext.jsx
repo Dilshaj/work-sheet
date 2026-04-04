@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { getTasks, getEmployees, addTask as apiAddTask, updateTaskStatus as apiUpdateStatus, updateEmployeeProgress as apiUpdateProgress, addEmployee as apiAddEmployee, deleteEmployee as apiDeleteEmployee } from '../services/taskService';
 import { useProjectFilter } from './ProjectFilterContext';
 
@@ -10,35 +10,32 @@ export const TaskProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const { selectedProjectId } = useProjectFilter();
 
-    useEffect(() => {
-        const fetchAll = () => {
-            setLoading(true);
-            Promise.all([getTasks(), getEmployees(selectedProjectId)]).then(([tasksData, empData]) => {
-                const bustedEmployees = empData.map(emp => {
-                    let avatar = emp.avatar;
-                    if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
-                        avatar = `${window.location.origin}${avatar}`;
-                    }
-                    if (avatar && !avatar.includes('ui-avatars.com')) {
-                        avatar = `${avatar.split('?')[0]}?t=${Date.now()}`;
-                    }
-                    return { ...emp, avatar };
-                });
-                setTasks(tasksData);
-                setEmployees(bustedEmployees);
-                setLoading(false);
+    const fetchAll = useCallback((silent = false) => {
+        if (!silent) setLoading(true);
+        Promise.all([getTasks(), getEmployees(selectedProjectId)]).then(([tasksData, empData]) => {
+            const normalized = empData.map(emp => {
+                let avatar = emp.avatar;
+                if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
+                    avatar = `${window.location.host.includes('localhost') ? 'http://localhost:5000' : ''}${avatar}`;
+                }
+                return { ...emp, avatar };
             });
-        };
-
-        fetchAll();
-        const intervalId = setInterval(fetchAll, 10000); // 10s polling for real-time visibility
-        return () => clearInterval(intervalId);
+            setTasks(tasksData);
+            setEmployees(normalized);
+            setLoading(false);
+        });
     }, [selectedProjectId]);
 
-    const fetchTasks = async () => {
+    useEffect(() => {
+        fetchAll();
+        const intervalId = setInterval(() => fetchAll(true), 15000); // 15s silent polling
+        return () => clearInterval(intervalId);
+    }, [fetchAll]);
+
+    const fetchTasks = useCallback(async () => {
         const data = await getTasks();
         setTasks(data);
-    };
+    }, []);
 
     const assignTask = async (taskObj) => {
         const newTask = await apiAddTask(taskObj);
@@ -94,8 +91,22 @@ export const TaskProvider = ({ children }) => {
         }
     };
 
+    const value = useMemo(() => ({
+        tasks,
+        employees,
+        loading,
+        fetchTasks,
+        fetchEmployees,
+        assignTask,
+        changeTaskStatus,
+        updateProgress,
+        addEmployee: addNewEmployee,
+        removeEmployee,
+        refreshEmployees: fetchEmployees
+    }), [tasks, employees, loading, fetchTasks, fetchEmployees, assignTask, changeTaskStatus, updateProgress, addNewEmployee, removeEmployee]);
+
     return (
-        <TaskContext.Provider value={{ tasks, employees, loading, fetchTasks, fetchEmployees, assignTask, changeTaskStatus, updateProgress, addEmployee: addNewEmployee, removeEmployee, refreshEmployees: fetchEmployees }}>
+        <TaskContext.Provider value={value}>
             {children}
         </TaskContext.Provider>
     );

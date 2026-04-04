@@ -32,14 +32,23 @@ const ProjectDashboard = () => {
             return;
         }
 
-        const fetchMetrics = async () => {
+        const fetchMetricsInitial = async () => {
             setLoadingMetrics(true);
             const data = await getAdminMetrics(projectId);
             setMetrics(data);
             setLoadingMetrics(false);
         };
-        fetchMetrics();
-    }, [projectId, projects, employees, tasks, navigate]);
+        fetchMetricsInitial();
+    }, [projectId, navigate]);
+
+    useEffect(() => {
+        if (!projectId) return;
+        const fetchMetricsSilent = async () => {
+            const data = await getAdminMetrics(projectId);
+            setMetrics(data);
+        };
+        fetchMetricsSilent();
+    }, [projects, employees, tasks]);
 
     const project = projects.find(p => p.id === projectId);
     const projectEmployees = employees.filter(e => e.projectId === projectId);

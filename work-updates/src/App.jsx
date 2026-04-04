@@ -132,6 +132,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/leaves"
+        element={
+          <PrivateRoute roleRequired="user">
+            <LeavePanel isAdmin={false} />
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/profile"
         element={
           <PrivateRoute>

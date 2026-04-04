@@ -1,4 +1,3 @@
-fetch(`${API_BASE_URL}/api/employee`)
 import axios from "axios";
 
 // 🔥 CHANGE THIS ONLY

@@ -33,14 +33,25 @@ const AdminDashboard = () => {
     const [loadingMetrics, setLoadingMetrics] = useState(true);
 
     React.useEffect(() => {
-        const fetchMetrics = async () => {
-            setLoadingMetrics(true);
+        const fetchMetrics = async (isInitial = false) => {
+            if (isInitial) setLoadingMetrics(true);
             const data = await getAdminMetrics(selectedProjectId);
             setMetrics(data);
-            setLoadingMetrics(false);
+            if (isInitial) setLoadingMetrics(false);
         };
-        fetchMetrics();
-    }, [selectedProjectId, projects, employees, tasks]); // Refresh if data changes locally too
+
+        // Initial load or project change should show loader
+        fetchMetrics(true);
+    }, [selectedProjectId]);
+
+    // Background sync for metrics when data changes
+    React.useEffect(() => {
+        const syncMetrics = async () => {
+            const data = await getAdminMetrics(selectedProjectId);
+            setMetrics(data);
+        };
+        syncMetrics();
+    }, [projects, employees, tasks]);
 
     const handleSaveProject = (projectData) => {
         if (editingProject) {

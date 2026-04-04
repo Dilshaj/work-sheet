@@ -1,24 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
-<<<<<<< HEAD
+import os
+import uuid
 from app.db.database import get_db
 from app.schemas.schemas import ProjectResponse, ProjectCreate, ProjectUpdate
 from app.services import project_service
 from app.utils.cloudinary_utils import upload_image as upload_to_cloudinary
-=======
-import os
-import uuid
-
-from app.db.database import get_db
-from app.schemas.schemas import ProjectResponse, ProjectCreate, ProjectUpdate
-from app.services import project_service
->>>>>>> 803770a4512ea25f36e8e70d89c573a2e84035d2
 
 # ✅ router MUST be first
 router = APIRouter(prefix="/projects")
 
-<<<<<<< HEAD
 # 🔥 IMAGE UPLOAD API (Cloudinary)
 @router.post("/upload-image")
 def upload_image(file: UploadFile = File(...)):
@@ -28,23 +20,6 @@ def upload_image(file: UploadFile = File(...)):
 
     return {
         "image_url": cloudinary_url
-=======
-UPLOAD_DIR = "uploads"
-
-# 🔥 IMAGE UPLOAD API
-@router.post("/upload-image")
-def upload_image(file: UploadFile = File(...)):
-    ext = file.filename.split(".")[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-
-    file_path = os.path.join(UPLOAD_DIR, filename)
-
-    with open(file_path, "wb") as buffer:
-        buffer.write(file.file.read())
-
-    return {
-        "image_url": f"/uploads/{filename}"
->>>>>>> 803770a4512ea25f36e8e70d89c573a2e84035d2
     }
 
 # ✅ GET ALL PROJECTS

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { getAttendanceLogs, checkIn, checkOut } from '../services/attendanceService';
 import { useAuth } from './AuthContext';
 import { useProjectFilter } from './ProjectFilterContext';
@@ -13,33 +13,29 @@ export const AttendanceProvider = ({ children }) => {
     const [logs, setLogs] = useState([]);
     const [activeLog, setActiveLog] = useState(null);
 
-    useEffect(() => {
-        const fetchLogs = async () => {
-            try {
-                // For admin, pass selectedProjectId to filter. For employees, fetch all (their own context).
-                const isAdmin = user?.role === 'admin';
-                const projId = isAdmin ? selectedProjectId : null;
-                const data = await getAttendanceLogs(projId);
-                setLogs(data);
+    const fetchLogs = useCallback(async (silent = false) => {
+        try {
+            const isAdmin = user?.role === 'admin';
+            const projId = isAdmin ? selectedProjectId : null;
+            const data = await getAttendanceLogs(projId);
+            setLogs(data);
 
-                if (user) {
-                    const today = new Date().toISOString().split('T')[0];
-                    const empId = user.employee_id || user.employeeId;
-                    const active = data.find(l => l.employeeId === empId && l.date === today && l.status === 'Checked In');
-                    setActiveLog(active || null);
-                }
-            } catch (error) {
-                console.error("Error fetching attendance logs:", error);
+            if (user) {
+                const today = new Date().toISOString().split('T')[0];
+                const empId = user.employee_id || user.employeeId;
+                const active = data.find(l => l.employeeId === empId && l.date === today && l.status === 'Checked In');
+                setActiveLog(active || null);
             }
-        };
-
-        fetchLogs();
-
-        // Polling every 10 seconds for real-time updates on admin dashboard
-        const intervalId = setInterval(fetchLogs, 10000);
-
-        return () => clearInterval(intervalId);
+        } catch (error) {
+            console.error("Error fetching attendance logs:", error);
+        }
     }, [user, selectedProjectId]);
+
+    useEffect(() => {
+        fetchLogs();
+        const intervalId = setInterval(() => fetchLogs(true), 20000); // 20s polling
+        return () => clearInterval(intervalId);
+    }, [fetchLogs]);
 
     const handleCheckIn = async () => {
         if (!user) return;
@@ -113,12 +109,12 @@ export const AttendanceProvider = ({ children }) => {
         }
     };
 
-    const value = {
+    const value = useMemo(() => ({
         logs,
         activeLog,
         handleCheckIn,
         handleCheckOut
-    };
+    }), [logs, activeLog, handleCheckIn, handleCheckOut]);
 
     return (
         <AttendanceContext.Provider value={value}>
