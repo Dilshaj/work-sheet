@@ -1,0 +1,27 @@
+[149.27, 749.75] Perpex Internship Program - Offer Letter
+[73.70, 684.66] Dear Saripilli muralikrishna,
+[73.70, 644.97] Congratulations! You have been selected for the role of Django Intern at Perpex.
+[73.70, 605.29] Please  note  that  this  is  an  unpaid  internship  opportunity.  Perpex  is  not  a  traditional
+[73.70, 585.44] internship  provider  -  we  are  a  SaaS-based  platform  that  offers  real-world  project
+[73.70, 565.60] experience, structured learning, and career preparation. You can think of it as "Internship as
+[73.70, 545.76] a Service".
+[73.70, 506.07] Your internship will begin on 28 July 2025. Kindly find the important details and guidelines
+[73.70, 486.23] below.
+[73.70, 456.47] Terms and Guidelines
+[73.70, 437.13] - Duration: 3 months
+[73.70, 420.13] - Mode: Remote (work from home)
+[73.70, 403.12] - Working Days: Monday to Friday
+[73.70, 386.11] - Daily Hours: 3 hours/day
+[73.70, 369.10] - Tracking: All activities will be monitored
+[73.70, 352.10] - Leave: 2 leaves per month (request via Support)
+[73.70, 335.09] - Device: Use desktop/laptop only (no mobile access)
+[73.70, 301.07] Note:
+[73.70, 284.06] - At the end of the program, you will receive a Certificate of Completion (if all rules are followed).
+[73.70, 267.06] - Top performers who pass the final round tests may be shortlisted for full-time roles (CTC up to INR
+[73.70, 250.05] 8 LPA).
+[73.70, 233.04] - Repeated violations (e.g., missing work hours) can result in termination.
+[73.70, 202.77] We are excited to have you with us!
+[73.70, 163.08] Warm regards,
+[73.70, 143.24] Team Perpex
+[179.81, 45.55] This is a system-generated letter and does not require a signature.
+[251.61, 31.37] Generated on 2025-07-28

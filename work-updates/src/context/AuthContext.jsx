@@ -1,0 +1,43 @@
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { login } from '../services/authService';
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem('user_v2');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+
+    const signIn = async (email, employeeId, password) => {
+        try {
+            const userData = await login(email, employeeId, password);
+            setUser(userData);
+            localStorage.setItem('user_v2', JSON.stringify(userData));
+            return userData;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const logout = () => {
+        setUser(null);
+        localStorage.removeItem('user_v2');
+    };
+
+    const updateUser = (updatedData) => {
+        setUser(prev => {
+            const newUser = { ...prev, ...updatedData };
+            localStorage.setItem('user_v2', JSON.stringify(newUser));
+            return newUser;
+        });
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, signIn, logout, updateUser }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+export const useAuth = () => useContext(AuthContext);

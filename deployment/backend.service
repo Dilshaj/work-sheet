@@ -1,0 +1,22 @@
+[Unit]
+Description=Gunicorn instance to serve EduProva Backend
+After=network.target
+
+[Service]
+# User and Group mapping for your AWS server
+User=ubuntu
+Group=www-data
+WorkingDirectory=/var/www/backend
+
+# The absolute path to your virtualenv binary and entry point
+ExecStart=/var/www/backend/venv/bin/gunicorn -c /var/www/backend/deployment/gunicorn_config.py main:app
+
+# Auto restart on failure (critical for stable production operations)
+Restart=always
+RestartSec=5
+
+# Critical for security: ensure production-grade env vars are loaded
+EnvironmentFile=/var/www/backend/.env
+
+[Install]
+WantedBy=multi-user.target
