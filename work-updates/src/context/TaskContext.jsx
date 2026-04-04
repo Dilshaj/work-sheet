@@ -28,8 +28,6 @@ export const TaskProvider = ({ children }) => {
 
     useEffect(() => {
         fetchAll();
-        const intervalId = setInterval(() => fetchAll(true), 15000); // 15s silent polling
-        return () => clearInterval(intervalId);
     }, [fetchAll]);
 
     const fetchTasks = useCallback(async () => {

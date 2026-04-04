@@ -33,8 +33,6 @@ export const AttendanceProvider = ({ children }) => {
 
     useEffect(() => {
         fetchLogs();
-        const intervalId = setInterval(() => fetchLogs(true), 20000); // 20s polling
-        return () => clearInterval(intervalId);
     }, [fetchLogs]);
 
     const handleCheckIn = async () => {
