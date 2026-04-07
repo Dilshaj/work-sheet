@@ -8,45 +8,35 @@ def get_current_timestamps():
     return now.strftime("%Y-%m-%d"), now.isoformat()
 
 def get_all_attendance(db: Session, skip: int = 0, limit: int = 100, project_id: str = None):
-    """Retrieve tracking list of all attendance logs, with optional project filtering."""
+    """Retrieve list of all attendance logs with worker names in a single JOIN query."""
     from sqlalchemy import text
-    if project_id:
-        # We join with User to filter attendance logs by project
-        # Using CAST for MSSQL performance
-        sql = """
-        SELECT a.id, a.employee_id, a.date, a.check_in, a.check_out, a.location_name, a.latitude, a.longitude, a.created_at 
-        FROM attendance a
-        INNER JOIN employees_table u ON CAST(a.employee_id AS VARCHAR(50)) = CAST(u.employee_id AS VARCHAR(50))
-        WHERE CAST(u.project_id AS VARCHAR(50)) = :pid
-        ORDER BY a.created_at DESC
-        """
-        rows = db.execute(text(sql), {"pid": project_id}).fetchall()
-        # Convert raw rows to Attendance model instances so route can attach userName
-        logs = []
-        for r in rows:
-            obj = Attendance()
-            obj.id = r[0]
-            obj.employee_id = r[1]
-            obj.date = r[2]
-            obj.check_in = r[3]
-            obj.check_out = r[4]
-            obj.location_name = r[5]
-            obj.latitude = r[6]
-            obj.longitude = r[7]
-            obj.created_at = r[8]
-            logs.append(obj)
-        return logs
     
-    # Case: Global retrieval (no project filter)
-    sql = """
-    SELECT id, employee_id, date, check_in, check_out, location_name, latitude, longitude, created_at 
-    FROM attendance
-    ORDER BY created_at DESC
+    # Base SQL with JOIN to get user names
+    sql_base = """
+    FROM attendance a
+    INNER JOIN employees_table u ON CAST(a.employee_id AS VARCHAR(50)) = CAST(u.employee_id AS VARCHAR(50))
     """
-    rows = db.execute(text(sql)).fetchall()
+    
+    where_clause = ""
+    params = {}
+    if project_id:
+        where_clause = " WHERE CAST(u.project_id AS VARCHAR(50)) = :pid"
+        params["pid"] = project_id
+    
+    # Final optimized query
+    sql = f"""
+    SELECT a.id, a.employee_id, a.date, a.check_in, a.check_out, a.location_name, a.latitude, a.longitude, a.created_at, u.name as userName
+    {sql_base}
+    {where_clause}
+    ORDER BY a.created_at DESC
+    OFFSET :skip ROWS FETCH NEXT :limit ROWS ONLY
+    """
+    params.update({"skip": skip, "limit": limit})
+    
+    rows = db.execute(text(sql), params).fetchall()
+    
     logs = []
-    # Limit manually for now
-    for r in rows[skip:skip+limit]:
+    for r in rows:
         obj = Attendance()
         obj.id = r[0]
         obj.employee_id = r[1]
@@ -57,7 +47,10 @@ def get_all_attendance(db: Session, skip: int = 0, limit: int = 100, project_id:
         obj.latitude = r[6]
         obj.longitude = r[7]
         obj.created_at = r[8]
+        # Attach the name directly from the JOIN
+        setattr(obj, "userName", r[9])
         logs.append(obj)
+    
     return logs
 
 def get_attendance_by_user(db: Session, identifier: str):
