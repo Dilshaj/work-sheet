@@ -70,7 +70,6 @@ export const addEmployee = async (employee) => {
         name: employee.name,
         role: employee.role,
         project_id: employee.projectId,
-        avatar: employee.avatar,
     });
     return res.data;
 };

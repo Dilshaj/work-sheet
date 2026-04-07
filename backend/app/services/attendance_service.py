@@ -8,10 +8,10 @@ def get_current_timestamps():
     return now.strftime("%Y-%m-%d"), now.isoformat()
 
 def get_all_attendance(db: Session, skip: int = 0, limit: int = 100, project_id: str = None):
-    """Retrieve list of all attendance logs with worker names in a single JOIN query."""
+    """Retrieve list of all attendance logs with worker names in a single JOIN query (High Performance)."""
     from sqlalchemy import text
     
-    # Base SQL with JOIN to get user names
+    # Using CAST for robust cross-type comparison in SQL Server
     sql_base = """
     FROM attendance a
     INNER JOIN employees_table u ON CAST(a.employee_id AS VARCHAR(50)) = CAST(u.employee_id AS VARCHAR(50))
@@ -23,7 +23,7 @@ def get_all_attendance(db: Session, skip: int = 0, limit: int = 100, project_id:
         where_clause = " WHERE CAST(u.project_id AS VARCHAR(50)) = :pid"
         params["pid"] = project_id
     
-    # Final optimized query
+    # Final optimized query with skip/limit
     sql = f"""
     SELECT a.id, a.employee_id, a.date, a.check_in, a.check_out, a.location_name, a.latitude, a.longitude, a.created_at, u.name as userName
     {sql_base}

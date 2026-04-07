@@ -18,6 +18,10 @@ def upload_image(file, folder="eduprova"):
     import tempfile
     import os
     try:
+        # Crucial: Ensure we are at the start of the file for reading
+        if hasattr(file, "seek"):
+            file.seek(0)
+            
         # Create a temp file to ensure the data is fully read/available
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp.write(file.read())

@@ -28,10 +28,8 @@ def get_attendance_logs(project_id: str = None, skip: int = 0, limit: int = 100,
 
 @router.get("/{employee_id}", response_model=List[AttendanceResponse])
 def get_employee_attendance(employee_id: str, db: Session = Depends(get_db)):
-    """Retrieve historical logs for one user. Optimized with direct name attachment."""
+    """Retrieve all historical attendance records mapped specifically to a single employee."""
     logs = attendance_service.get_attendance_by_user(db, identifier=employee_id)
-    # We can still use the helper for single-user view as N is small here, 
-    # but the bulk view was the main issue.
     for log in logs:
         attach_user_name(db, log)
     return logs

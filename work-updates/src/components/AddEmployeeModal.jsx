@@ -7,23 +7,24 @@ const DEBOUNCE_MS = 500;
 
 const AddEmployeeModal = ({ isOpen, onClose, onAdd, projectId, projectName }) => {
     const { refreshEmployees } = useTasks();
-
-    // --- State ---
     const [employeeId, setEmployeeId] = useState('');
     const [name, setName] = useState('');
     const [role, setRole] = useState('');
-    const [avatar, setAvatar] = useState(null);
-    const [avatarPreview, setAvatarPreview] = useState(null);
+
+    // Holds the UUID of the employee found in DB (null if new / not found)
     const [foundEmployee, setFoundEmployee] = useState(null);
+
+    // Per-field search status: idle | searching | found | not-found
     const [idStatus, setIdStatus] = useState('idle');
     const [nameStatus, setNameStatus] = useState('idle');
+
+    // Submission
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
 
-    // --- Refs ---
+    // Debounce timers
     const idTimer = useRef(null);
     const nameTimer = useRef(null);
-    const fileInputRef = useRef(null);
 
     // Reset when modal opens/closes
     useEffect(() => {
@@ -31,8 +32,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, projectId, projectName }) =>
             setEmployeeId('');
             setName('');
             setRole('');
-            setAvatar(null);
-            setAvatarPreview(null);
             setFoundEmployee(null);
             setIdStatus('idle');
             setNameStatus('idle');
@@ -48,19 +47,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, projectId, projectName }) =>
         setEmployeeId(emp.employeeId || '');
         setName(emp.name || '');
         setRole(emp.role || emp.title || '');
-        setAvatarPreview(emp.avatar || null);
-    };
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result);
-                setAvatar(reader.result); // Base64
-            };
-            reader.readAsDataURL(file);
-        }
     };
 
     const clearFound = () => setFoundEmployee(null);
@@ -125,7 +111,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, projectId, projectName }) =>
                 await refreshEmployees(); // sync context state from server
             } else {
                 // Brand-new employee → create via context/API
-                await onAdd({ employeeId, name, role, projectId, avatar });
+                await onAdd({ employeeId, name, role, projectId });
             }
             onClose();
         } catch (err) {
@@ -160,31 +146,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onAdd, projectId, projectName }) =>
                 <form onSubmit={handleSubmit} className="p-6">
                     <div className="mb-4 text-sm text-slate-500 dark:text-slate-400">
                         Adding an employee to <span className="font-semibold text-slate-700 dark:text-slate-200">{projectName}</span>.
-                    </div>
-
-                    {/* ── Profile Image ── */}
-                    <div className="flex flex-col items-center mb-6">
-                        <div
-                            className="relative h-20 w-20 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors overflow-hidden group"
-                            onClick={() => fileInputRef.current.click()}
-                        >
-                            {avatarPreview ? (
-                                <img src={avatarPreview} alt="Preview" className="h-full w-full object-cover" />
-                            ) : (
-                                <UserPlus className="h-8 w-8 text-slate-400 group-hover:text-blue-500" />
-                            )}
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[10px] text-white font-medium uppercase">Change</span>
-                            </div>
-                        </div>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                        />
-                        <p className="text-[11px] text-slate-400 mt-2">Optional: Upload profile photo</p>
                     </div>
 
                     <div className="space-y-4">

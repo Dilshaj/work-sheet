@@ -39,16 +39,6 @@ def create_employee(db: Session, employee: EmployeeCreate):
         # STEP 4: Debug Log - ID before insert
         print(f"DEBUG: Inserting Employee ID: {employee.employee_id}")
 
-        # Handle Avatar if provided (Cloudinary conversion if base64)
-        avatar_url = employee.avatar
-        if avatar_url and avatar_url.startswith("data:image"):
-            from app.utils.cloudinary_utils import upload_base64_image
-            logger.info(f"Uploading base64 avatar for new employee {employee.employee_id}")
-            cloudinary_url = upload_base64_image(avatar_url, folder="avatars")
-            if cloudinary_url:
-                avatar_url = cloudinary_url
-                logger.info(f"Cloudinary upload success: {avatar_url}")
-
         # Default setup for new employees
         db_user = User(
             employee_id=employee.employee_id,
@@ -57,8 +47,7 @@ def create_employee(db: Session, employee: EmployeeCreate):
             role=employee.role or "user",
             password_hash=get_password_hash("user"),
             is_first_login=True,
-            project_id=employee.project_id,
-            avatar=avatar_url
+            project_id=employee.project_id
         )
         
         # STEP 7: Verify SQLAlchemy insert statement

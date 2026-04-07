@@ -22,9 +22,7 @@ export const TaskProvider = ({ children }) => {
                 const normalized = empData.map(emp => {
                     let avatar = emp.avatar;
                     if (avatar && !avatar.includes('http') && avatar.startsWith('/')) {
-                        // In dev, use port 5000; in prod, use the current origin
-                        const backendBase = window.location.host.includes('localhost') ? 'http://localhost:5000' : window.location.origin;
-                        avatar = `${backendBase}${avatar}`;
+                        avatar = `${window.location.host.includes('localhost') ? 'http://localhost:5000' : ''}${avatar}`;
                     }
                     return { ...emp, avatar };
                 });
