@@ -152,9 +152,13 @@ const UserProfile = () => {
                         <div className="flex flex-col items-center mb-8">
                             <div className="relative group cursor-pointer" onClick={handleImageClick}>
                                 <img
-                                    src={previewImage}
+                                    src={previewImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random&color=fff&bold=true`}
                                     alt={user?.name}
                                     className={`h-32 w-32 rounded-full border-4 ${isEditMode ? 'border-indigo-400' : 'border-slate-50 dark:border-slate-800'} mb-4 shadow-md object-cover transition-all`}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random&color=fff&bold=true`;
+                                    }}
                                 />
                                 {isEditMode && (
                                     <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">

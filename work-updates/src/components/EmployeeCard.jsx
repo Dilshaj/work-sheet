@@ -50,7 +50,15 @@ const EmployeeCard = ({ employee, projectId }) => {
             )}
 
             <div className="flex items-center gap-4 mb-5 border-b border-slate-100 dark:border-slate-800 pb-4">
-                <img src={employee.avatar} alt={employee.name} className="h-12 w-12 rounded-full border border-slate-200 dark:border-slate-700 object-cover" />
+                <img
+                    src={employee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=random&color=fff&bold=true`}
+                    alt={employee.name}
+                    className="h-12 w-12 rounded-full border border-slate-200 dark:border-slate-700 object-cover"
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=random&color=fff&bold=true`;
+                    }}
+                />
                 <div className="pr-8">
                     <h4 className="font-semibold text-slate-800 dark:text-slate-100 truncate max-w-[120px]">{employee.name}</h4>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{employee.title || employee.role}</span>
