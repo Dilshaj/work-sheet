@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
-from typing import Optional
+import logging
 
 from app.db.database import get_db
 from app.schemas.schemas import EmployeeResponse, EmployeeCreate, EmployeeProgressUpdate
 from app.services import employee_service
+
+logger = logging.getLogger(__name__)
 
 class AssignProjectRequest(BaseModel):
     projectId: Optional[str] = None
@@ -40,9 +42,6 @@ def get_employee(id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Employee not found")
     return employee
 
-import logging
-logger = logging.getLogger(__name__)
-
 @router.post("", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
 def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
     """Create a new employee with a default password of 'user'. Validates employee_id uniqueness."""
@@ -60,7 +59,6 @@ def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
         new_employee = employee_service.create_employee(db=db, employee=employee)
         return new_employee
     except Exception as e:
-        # Step 4: Return proper JSON error instead of crashing
         logger.error(f"Route failure in create_employee: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
