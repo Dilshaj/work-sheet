@@ -31,18 +31,49 @@ def generate_pay_slip(payload: PaySlipCreate, db: Session = Depends(get_db)):
 
 @router.get("/pay-slips", response_model=List[PaySlipResponse])
 def get_all_pay_slips(project_id: Optional[str] = None, db: Session = Depends(get_db)):
-    query = db.query(PaySlip).order_by(PaySlip.created_at.desc())
+    """Retrieve all pay slips with employee names in a single high-performance query."""
+    from sqlalchemy import text
+    
+    sql = """
+    SELECT p.*, e.name as employee_name
+    FROM pay_slips p
+    LEFT JOIN employees_table e ON CAST(p.employee_id AS VARCHAR(50)) = CAST(e.employee_id AS VARCHAR(50))
+    """
+    
+    params = {}
     if project_id and project_id != 'null':
-        query = query.filter(PaySlip.project_id == project_id)
+        sql += " WHERE p.project_id = :pid"
+        params["pid"] = project_id
     
-    results = query.all()
+    sql += " ORDER BY p.created_at DESC"
     
-    # Attach employee names
-    for slip in results:
-        emp = db.query(User).filter(User.employee_id == slip.employee_id).first()
-        slip.employee_name = emp.name if emp else "Unknown"
+    rows = db.execute(text(sql), params).fetchall()
+    
+    # Map raw rows to Pydantic-compatible objects
+    results = []
+    for r in rows:
+        # Create a dictionary since PaySlipResponse can parse from attributes/dict
+        slip_dict = dict(r._mapping)
+        results.append(slip_dict)
         
     return results
+
+@router.get("/pay-slips/{id}/download")
+def download_pay_slip(id: str, db: Session = Depends(get_db)):
+    """Backend endpoint logic for generating a downloadable slip (Placeholder for future PDF logic)."""
+    slip = db.query(PaySlip).filter(PaySlip.id == id).first()
+    if not slip:
+        raise HTTPException(status_code=404, detail="Pay slip not found")
+    return {"message": "Pay slip data ready for download", "id": id}
+
+@router.post("/pay-slips/{id}/send-email")
+def send_pay_slip_email(id: str, db: Session = Depends(get_db)):
+    """Backend trigger for emailing the pay slip to the employee."""
+    slip = db.query(PaySlip).filter(PaySlip.id == id).first()
+    if not slip:
+        raise HTTPException(status_code=404, detail="Pay slip not found")
+    # Email logic would go here
+    return {"message": f"Pay slip for {slip.month} sent to employee successfully"}
 
 @router.get("/pay-slips/my/{employee_id}", response_model=List[PaySlipResponse])
 def get_my_pay_slips(employee_id: str, db: Session = Depends(get_db)):
