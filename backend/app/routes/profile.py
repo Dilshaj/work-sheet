@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -6,6 +7,8 @@ from app.models.models import User
 from app.schemas.schemas import UserResponse
 from app.routes.auth import get_current_user
 from app.utils.cloudinary_utils import upload_image as upload_to_cloudinary
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/employee")
 
